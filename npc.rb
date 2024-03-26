@@ -3,9 +3,8 @@
 class NPC
   attr_reader :secret_code
 
-  @code_range = [1, 2, 3, 4, 5, 6]
-
   def initialize
+    @code_range = [1, 2, 3, 4, 5, 6]
     @secret_code = code_generator
     @black_pegs = 0
     @white_pegs = 0
@@ -13,8 +12,8 @@ class NPC
 
   def code_accessor(code)
     reset_pegs
-    tmp_secret_code = @secret_code
-    tmp_code = code
+    tmp_secret_code = @secret_code.clone
+    tmp_code = code.clone
     code.each_with_index do |digit, ind|
       next unless digit == @secret_code[ind]
 
@@ -22,6 +21,7 @@ class NPC
       tmp_code[ind] = ''
       @black_pegs += 1
     end
+    # To determine the number of white pegs
     tmp_code.each_with_index do |digit, ind|
       next unless digit != '' && tmp_secret_code.include?(digit)
 
@@ -39,7 +39,7 @@ class NPC
   def code_generator
     code = []
     4.times do
-      code.push(@@code_range.sample)
+      code.push(@code_range.sample)
     end
     code
   end
