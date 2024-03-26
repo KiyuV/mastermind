@@ -1,0 +1,1 @@
+This project aims to build the game 'Mastermind' from the command line.
