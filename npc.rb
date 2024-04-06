@@ -10,6 +10,12 @@ class NPC
     else
       @code_range = %w[1 2 3 4 5 6]
       @all_codes = possible_codes
+      @current_guess = '1111'
+      @current_pegs = [0, 0]
+      @prev_total_pegs = 0
+      @total_pegs = 0
+      @total_peg_diff = 0
+      @current_digit = 1
     end
   end
 
@@ -37,19 +43,71 @@ class NPC
   end
 
   def get_response(pegs)
-    @current_pegs = pegs.split(' ')
-
-    return unless @current_pegs[0] == '4'
+    @current_pegs = pegs.split(' ').map(&:to_i)
+    # return true if there are 4 black pegs
+    return unless @current_pegs[0] == 4
 
     true
   end
 
   def make_guess
-    guess = ''
-    4.times do
-      guess << @code_range.sample
+    @prev_total_pegs = @total_pegs
+    @total_pegs = @current_pegs[0] + @current_pegs[1]
+    peg_diff = @total_pegs - @prev_total_pegs
+
+    if @total_pegs.zero?
+      @all_codes = @all_codes.reject { |num| num.include?(@current_digit.to_s) }
+      @current_digit += 1
+      @current_guess = @all_codes[0]
+
+    elsif @total_pegs == 4
+      @all_codes.delete(@current_guess)
+      correct_digits = {}
+
+      @current_guess.split('').each do |digit|
+        if correct_digits[digit.to_s]
+          correct_digits[digit.to_s] += 1
+        else
+          correct_digits[digit.to_s] = 1
+        end
+      end
+
+      unique_digits = correct_digits.keys
+      num_of_digits = correct_digits.values
+
+      # removing any codes which do no satisfy the values in the hash
+      @all_codes = @all_codes.select do |code|
+        did_pass = false
+        unique_digits.each_with_index do |digit, ind|
+          if code.include?(digit) && code.scan(digit).count == num_of_digits[ind]
+            did_pass = true
+          else
+            did_pass = false
+            break
+          end
+        end
+        did_pass
+      end
+      # from the thinned out list of codes ramdomly select one to use as next guess
+      next_guess = @all_codes.sample
+      @current_guess = next_guess
+
+    elsif peg_diff >= 0
+      # no improvement from previous guess, remove codes that contain the current digit
+      if @total_pegs == @prev_total_pegs
+        @all_codes = @all_codes.reject { |num| num.include?(@current_digit.to_s) }
+        p @all_codes.length
+      end
+      next_guess = @current_guess[0, peg_diff + @total_peg_diff]
+      @current_digit += 1
+
+      (4 - (peg_diff + @total_peg_diff)).times do
+        next_guess << @current_digit.to_s
+      end
+
+      @total_peg_diff += peg_diff
+      @current_guess = next_guess
     end
-    guess
   end
 
   private

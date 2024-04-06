@@ -26,7 +26,12 @@ class Mastermind
 
       puts "Mission falied, better luck next time #{@player.name}! The secret code was #{@npc.secret_code.join('')}"
     else
-      12.times do
+      increment_guess
+      puts "\nGuess ##{@guesses} - 1111"
+      puts 'How many black and white pegs are there?'
+      @npc.get_response(gets.chomp)
+
+      11.times do
         increment_guess
         puts "\nGuess ##{@guesses} - #{@npc.make_guess}"
         puts 'How many black and white pegs are there?'
